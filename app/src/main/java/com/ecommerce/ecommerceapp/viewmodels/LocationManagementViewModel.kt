@@ -44,9 +44,16 @@ class LocationManagementViewModel : ViewModel() {
             try {
                 val response = ApiClient.apiService.getCountries()
                 if (response.isSuccessful && response.body() != null) {
-                    countries = response.body()!!
+                    // CORRECCIÓN PM1: la lista viene DENTRO del objeto de respuesta.
+                    countries = response.body()!!.countries
+                    Log.d("LOCATION_DEBUG", "Países cargados: ${countries.size}")
+                    if (countries.isEmpty()) {
+                        errorMessage = "El servidor no devolvió ningún país"
+                    }
                 } else {
-                    errorMessage = "Error al cargar países"
+                    // Se muestra el código real para poder distinguir un 404 de un 500.
+                    errorMessage = "Error al cargar países (código ${response.code()})"
+                    Log.e("LOCATION_DEBUG", "getCountries HTTP ${response.code()}")
                 }
             } catch (e: Exception) {
                 errorMessage = "Error de conexión: ${e.message}"
@@ -63,9 +70,12 @@ class LocationManagementViewModel : ViewModel() {
             try {
                 val response = ApiClient.apiService.getStates(countryId)
                 if (response.isSuccessful && response.body() != null) {
-                    states = response.body()!!
+                    // CORRECCIÓN PM1: la lista viene DENTRO del objeto de respuesta.
+                    states = response.body()!!.states
+                    Log.d("LOCATION_DEBUG", "Estados cargados: ${states.size} (país=$countryId)")
                 } else {
-                    errorMessage = "Error al cargar estados"
+                    errorMessage = "Error al cargar estados (código ${response.code()})"
+                    Log.e("LOCATION_DEBUG", "getStates HTTP ${response.code()}")
                 }
             } catch (e: Exception) {
                 errorMessage = "Error de conexión: ${e.message}"
@@ -82,9 +92,12 @@ class LocationManagementViewModel : ViewModel() {
             try {
                 val response = ApiClient.apiService.getCities(stateId)
                 if (response.isSuccessful && response.body() != null) {
-                    cities = response.body()!!
+                    // CORRECCIÓN PM1: la lista viene DENTRO del objeto de respuesta.
+                    cities = response.body()!!.cities
+                    Log.d("LOCATION_DEBUG", "Ciudades cargadas: ${cities.size} (estado=$stateId)")
                 } else {
-                    errorMessage = "Error al cargar ciudades"
+                    errorMessage = "Error al cargar ciudades (código ${response.code()})"
+                    Log.e("LOCATION_DEBUG", "getCities HTTP ${response.code()}")
                 }
             } catch (e: Exception) {
                 errorMessage = "Error de conexión: ${e.message}"
