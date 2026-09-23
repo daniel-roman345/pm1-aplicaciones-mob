@@ -221,9 +221,25 @@ class LocationManagementViewModel : ViewModel() {
         clearMessages()
     }
 
+    // CORRECCIÓN PM1 · Reto 1 — encadenar país -> estados.
+    // Antes esta función solo guardaba el país escogido: el segundo desplegable
+    // nunca se enteraba y seguía mostrando los estados del país anterior.
+    // Ahora, al escoger un país:
+    //   1. se limpia la selección dependiente (estado y ciudad), para no dejar
+    //      un estado de Colombia seleccionado mientras el país dice México;
+    //   2. se dispara la carga de los estados de ESE país.
     fun updateSelectedCountryForState(country: Country?) {
         selectedCountryForState = country
         clearMessages()
+
+        selectedStateForCity = null
+        states = emptyList()
+        cities = emptyList()
+
+        if (country != null) {
+            Log.d("LOCATION_DEBUG", "País seleccionado: ${country.CountryName} (id=${country.iD_Country})")
+            loadStates(country.iD_Country)
+        }
     }
 
     fun updateNewCityName(name: String) {
@@ -231,9 +247,17 @@ class LocationManagementViewModel : ViewModel() {
         clearMessages()
     }
 
+    // Mismo encadenamiento un nivel más abajo: estado -> ciudades.
     fun updateSelectedStateForCity(state: State?) {
         selectedStateForCity = state
         clearMessages()
+
+        cities = emptyList()
+
+        if (state != null) {
+            Log.d("LOCATION_DEBUG", "Estado seleccionado: ${state.StatesName} (id=${state.iD_States})")
+            loadCities(state.iD_States)
+        }
     }
 
     fun clearMessages() {
