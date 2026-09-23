@@ -44,9 +44,16 @@ class LocationManagementViewModel : ViewModel() {
             try {
                 val response = ApiClient.apiService.getCountries()
                 if (response.isSuccessful && response.body() != null) {
-                    countries = response.body()!!
+                    // CORRECCIÓN PM1: la lista viene DENTRO del objeto de respuesta.
+                    countries = response.body()!!.countries
+                    Log.d("LOCATION_DEBUG", "Países cargados: ${countries.size}")
+                    if (countries.isEmpty()) {
+                        errorMessage = "El servidor no devolvió ningún país"
+                    }
                 } else {
-                    errorMessage = "Error al cargar países"
+                    // Se muestra el código real para poder distinguir un 404 de un 500.
+                    errorMessage = "Error al cargar países (código ${response.code()})"
+                    Log.e("LOCATION_DEBUG", "getCountries HTTP ${response.code()}")
                 }
             } catch (e: Exception) {
                 errorMessage = "Error de conexión: ${e.message}"
@@ -63,9 +70,12 @@ class LocationManagementViewModel : ViewModel() {
             try {
                 val response = ApiClient.apiService.getStates(countryId)
                 if (response.isSuccessful && response.body() != null) {
-                    states = response.body()!!
+                    // CORRECCIÓN PM1: la lista viene DENTRO del objeto de respuesta.
+                    states = response.body()!!.states
+                    Log.d("LOCATION_DEBUG", "Estados cargados: ${states.size} (país=$countryId)")
                 } else {
-                    errorMessage = "Error al cargar estados"
+                    errorMessage = "Error al cargar estados (código ${response.code()})"
+                    Log.e("LOCATION_DEBUG", "getStates HTTP ${response.code()}")
                 }
             } catch (e: Exception) {
                 errorMessage = "Error de conexión: ${e.message}"
@@ -82,9 +92,12 @@ class LocationManagementViewModel : ViewModel() {
             try {
                 val response = ApiClient.apiService.getCities(stateId)
                 if (response.isSuccessful && response.body() != null) {
-                    cities = response.body()!!
+                    // CORRECCIÓN PM1: la lista viene DENTRO del objeto de respuesta.
+                    cities = response.body()!!.cities
+                    Log.d("LOCATION_DEBUG", "Ciudades cargadas: ${cities.size} (estado=$stateId)")
                 } else {
-                    errorMessage = "Error al cargar ciudades"
+                    errorMessage = "Error al cargar ciudades (código ${response.code()})"
+                    Log.e("LOCATION_DEBUG", "getCities HTTP ${response.code()}")
                 }
             } catch (e: Exception) {
                 errorMessage = "Error de conexión: ${e.message}"
@@ -208,9 +221,25 @@ class LocationManagementViewModel : ViewModel() {
         clearMessages()
     }
 
+    // CORRECCIÓN PM1 · Reto 1 — encadenar país -> estados.
+    // Antes esta función solo guardaba el país escogido: el segundo desplegable
+    // nunca se enteraba y seguía mostrando los estados del país anterior.
+    // Ahora, al escoger un país:
+    //   1. se limpia la selección dependiente (estado y ciudad), para no dejar
+    //      un estado de Colombia seleccionado mientras el país dice México;
+    //   2. se dispara la carga de los estados de ESE país.
     fun updateSelectedCountryForState(country: Country?) {
         selectedCountryForState = country
         clearMessages()
+
+        selectedStateForCity = null
+        states = emptyList()
+        cities = emptyList()
+
+        if (country != null) {
+            Log.d("LOCATION_DEBUG", "País seleccionado: ${country.CountryName} (id=${country.iD_Country})")
+            loadStates(country.iD_Country)
+        }
     }
 
     fun updateNewCityName(name: String) {
@@ -218,9 +247,17 @@ class LocationManagementViewModel : ViewModel() {
         clearMessages()
     }
 
+    // Mismo encadenamiento un nivel más abajo: estado -> ciudades.
     fun updateSelectedStateForCity(state: State?) {
         selectedStateForCity = state
         clearMessages()
+
+        cities = emptyList()
+
+        if (state != null) {
+            Log.d("LOCATION_DEBUG", "Estado seleccionado: ${state.StatesName} (id=${state.iD_States})")
+            loadCities(state.iD_States)
+        }
     }
 
     fun clearMessages() {
