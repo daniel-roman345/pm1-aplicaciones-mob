@@ -170,7 +170,11 @@ class ProfileViewModel(private val sessionManager: SessionManager) : ViewModel()
             try {
                 val response = ApiClient.apiService.getCities()
                 if (response.isSuccessful && response.body() != null) {
-                    cities = response.body()!!
+                    // La lista viene DENTRO del objeto de respuesta: { "cities": [...] }
+                    cities = response.body()!!.cities
+                    Log.d("PROFILE_DEBUG", "Ciudades cargadas: ${cities.size}")
+                } else {
+                    Log.e("PROFILE_DEBUG", "getCities HTTP ${response.code()}")
                 }
             } catch (e: Exception) {
                 Log.e("PROFILE_DEBUG", "Error loading cities", e)
