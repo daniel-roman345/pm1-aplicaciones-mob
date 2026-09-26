@@ -21,6 +21,13 @@ class UserManagementViewModel(private val sessionManager: SessionManager) : View
     var selectedUser by mutableStateOf<UserProfile?>(null)
     var availableRoles by mutableStateOf<List<Role>>(emptyList())
 
+    // CORRECCIÓN PM1 · Reto 2: primera capa de seguridad, la de la interfaz.
+    // Se lee del SessionManager, que lo guardó al iniciar sesión. Sirve para
+    // no ofrecer una acción que el servidor va a rechazar de todos modos.
+    // La segunda capa es el backend, que responde 403 aunque alguien fuerce
+    // la petición; por eso son dos capas y no una sola.
+    var esAdministrador by mutableStateOf(false)
+
     // Estados de carga
     var isLoadingUsers by mutableStateOf(false)
     var isLoadingRoles by mutableStateOf(false)
@@ -32,8 +39,16 @@ class UserManagementViewModel(private val sessionManager: SessionManager) : View
     var successMessage by mutableStateOf<String?>(null)
 
     init {
+        cargarPermisos()
         loadUsers()
         loadRoles()
+    }
+
+    private fun cargarPermisos() {
+        viewModelScope.launch {
+            esAdministrador = sessionManager.isAdmin.first()
+            Log.d("USER_MGMT_DEBUG", "¿El usuario en sesión es administrador? $esAdministrador")
+        }
     }
 
     fun loadUsers(page: Int = 1, search: String = "") {
@@ -105,6 +120,13 @@ class UserManagementViewModel(private val sessionManager: SessionManager) : View
     }
 
     fun updateUserRole(userId: Int, roleId: Int) {
+        // Capa 1: ni siquiera se lanza la petición si el usuario no es admin.
+        if (!esAdministrador) {
+            errorMessage = "Solo un administrador puede cambiar el rol de un usuario"
+            Log.d("USER_MGMT_DEBUG", "Cambio de rol bloqueado en la app: el usuario no es admin")
+            return
+        }
+
         isUpdatingRole = true
         viewModelScope.launch {
             try {
