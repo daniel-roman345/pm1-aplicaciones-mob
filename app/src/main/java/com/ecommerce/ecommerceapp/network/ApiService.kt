@@ -14,14 +14,17 @@ interface ApiService {
     suspend fun register(@Body user: User): Response<RegisterResponse>
 
     // ========== PERFIL DE USUARIO ==========
+    // CORRECCIÓN PM1 · Reto 2: el backend responde { "user": { ... } }, no el
+    // objeto pelado. Por eso la pantalla de perfil se abría en blanco.
     @GET("api/users/profile")
-    suspend fun getProfile(@Header("Authorization") token: String): Response<UserProfile>
+    suspend fun getProfile(@Header("Authorization") token: String): Response<UserProfileResponse>
 
+    // CORRECCIÓN PM1 · Reto 2: responde { "message": "...", "user": { ... } }.
     @PUT("api/users/profile")
     suspend fun updateProfile(
         @Header("Authorization") token: String,
         @Body profile: UpdateProfileRequest
-    ): Response<UserProfile>
+    ): Response<UserProfileResponse>
 
     @PUT("api/auth/change-password")
     suspend fun changePassword(
@@ -44,12 +47,13 @@ interface ApiService {
         @Path("id") id: Int
     ): Response<UserProfile>
 
+    // CORRECCIÓN PM1 · Reto 2: misma envoltura { "message", "user" }.
     @PUT("api/users/{id}/roles")
     suspend fun updateUserRoles(
         @Header("Authorization") token: String,
         @Path("id") id: Int,
         @Body roleRequest: UpdateUserRoleRequest
-    ): Response<UserProfile>
+    ): Response<UserProfileResponse>
 
     @DELETE("api/users/{id}")
     suspend fun deleteUser(
@@ -81,8 +85,10 @@ interface ApiService {
     @POST("api/locations/cities")
     suspend fun createCity(@Body request: CreateLocationRequest): Response<City>
 
+    // CORRECCIÓN PM1 · Reto 2: responde { "roles": [ ... ] }, igual que los
+    // países del Reto 1. Devolver List<Role> hacía fallar a Gson.
     @GET("api/auth/roles")
-    suspend fun getRoles(): Response<List<Role>>
+    suspend fun getRoles(): Response<RolesResponse>
 
 
     // ========== GESTIÓN DE CATEGORÍAS ==========
