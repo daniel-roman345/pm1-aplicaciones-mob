@@ -73,7 +73,15 @@ class UserManagementViewModel(private val sessionManager: SessionManager) : View
             try {
                 val response = ApiClient.apiService.getRoles()
                 if (response.isSuccessful && response.body() != null) {
-                    availableRoles = response.body()!!
+                    // CORRECCIÓN PM1 · Reto 2: la lista viene DENTRO del objeto.
+                    availableRoles = response.body()!!.roles
+                    Log.d("USER_MGMT_DEBUG", "Roles cargados: ${availableRoles.size}")
+                    if (availableRoles.isEmpty()) {
+                        errorMessage = "El servidor no devolvió ningún rol"
+                    }
+                } else {
+                    errorMessage = "Error al cargar los roles (código ${response.code()})"
+                    Log.e("USER_MGMT_DEBUG", "getRoles HTTP ${response.code()}")
                 }
             } catch (e: Exception) {
                 Log.e("USER_MGMT_DEBUG", "Error loading roles", e)
@@ -109,11 +117,25 @@ class UserManagementViewModel(private val sessionManager: SessionManager) : View
                         roleRequest = roleRequest
                     )
 
-                    if (response.isSuccessful) {
-                        successMessage = "Rol de usuario actualizado exitosamente"
+                    if (response.isSuccessful && response.body() != null) {
+                        // CORRECCIÓN PM1 · Reto 2: la respuesta es
+                        // { "message": "...", "user": { ... } }. Se aprovecha el
+                        // mensaje del servidor y el usuario ya actualizado.
+                        val cuerpo = response.body()!!
+                        val nuevoRol = cuerpo.user?.roles?.joinToString { it.TypeRole }
+                        successMessage = cuerpo.message ?: "Rol actualizado exitosamente"
+                        Log.d("USER_MGMT_DEBUG", "Usuario $userId quedó con el rol: $nuevoRol")
                         loadUsers(currentPage, searchQuery) // Recargar lista
                     } else {
-                        errorMessage = "Error al actualizar el rol del usuario"
+                        // El 403 no es un fallo de la app: es la matriz de permisos
+                        // funcionando. Se distingue del resto para que el mensaje
+                        // le diga la verdad al usuario.
+                        errorMessage = when (response.code()) {
+                            403 -> "No tienes permisos de administrador para cambiar roles"
+                            401 -> "Tu sesión expiró, vuelve a iniciar sesión"
+                            else -> "Error al actualizar el rol (código ${response.code()})"
+                        }
+                        Log.e("USER_MGMT_DEBUG", "updateUserRoles HTTP ${response.code()}")
                     }
                 }
             } catch (e: Exception) {
