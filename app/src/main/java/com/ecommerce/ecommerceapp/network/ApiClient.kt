@@ -10,9 +10,27 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
 
-    private const val BASE_URL = "https://ecommerce-api-python.onrender.com/"
-    //private const val BASE_URL = "http://192.168.1.44:5050/"
-    //private const val BASE_URL = "http://127.0.0.1:5050/"
+    // ------------------------------------------------------------------
+    //  A DONDE APUNTA LA APP
+    // ------------------------------------------------------------------
+    // Descomenta UNA sola linea segun donde estes corriendo la app.
+    //
+    // 1) EMULADOR de Android Studio. Para el emulador, la maquina donde
+    //    corre Flask NO es 127.0.0.1 (eso seria el emulador hablando
+    //    consigo mismo): es la direccion especial 10.0.2.2, que el
+    //    emulador redirige al PC anfitrion.
+    private const val BASE_URL = "http://10.0.2.2:5050/"
+
+    // 2) CELULAR FISICO por USB o WiFi. Aqui si va la IP del PC en la red.
+    //    Ambos tienen que estar en la misma WiFi. Si tu IP cambia, mirala
+    //    en la terminal donde arranca Flask: la imprime como
+    //    "Running on http://<tu-ip>:5050".
+    //private const val BASE_URL = "http://192.168.20.8:5050/"
+
+    // 3) SERVIDOR DESPLEGADO en Render. No sirve para el plan de
+    //    mejoramiento, porque entonces la app no toca tu backend local y
+    //    la terminal no registra ninguna peticion.
+    //private const val BASE_URL = "https://ecommerce-api-python.onrender.com/"
 
 
 
