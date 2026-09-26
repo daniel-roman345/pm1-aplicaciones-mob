@@ -1,0 +1,45 @@
+###############################################################
+#  PM1-AA2-EV04 · Registro de peticiones en la terminal        #
+#  del backend Flask                                           #
+#  Aprendiz: Daniel Salas Roman   Ficha: 3223873               #
+###############################################################
+
+Cada linea es una peticion que llego al servidor. El numero final
+es el codigo HTTP con el que respondio.
+
+  200 = correcto
+  401 = no hay token o el token no sirve  -> AUTENTICACION
+  403 = si se quien eres, pero tu rol no alcanza -> AUTORIZACION
+
+---------------------------------------------------------------
+127.0.0.1 - - [26/Sep/2026 00:43:57] "GET /api/locations/countries HTTP/1.1" 200 -
+127.0.0.1 - - [26/Sep/2026 00:43:57] "GET /api/locations/countries HTTP/1.1" 200 -
+127.0.0.1 - - [26/Sep/2026 00:43:57] "GET /api/locations/states?country_id=1 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Sep/2026 00:43:57] "GET /api/locations/cities?state_id=1 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Sep/2026 00:43:57] "GET /api/auth/roles HTTP/1.1" 200 -
+127.0.0.1 - - [26/Sep/2026 00:43:58] "POST /api/auth/login HTTP/1.1" 200 -
+127.0.0.1 - - [26/Sep/2026 00:43:58] "POST /api/auth/login HTTP/1.1" 401 -
+127.0.0.1 - - [26/Sep/2026 00:43:58] "GET /api/users/profile HTTP/1.1" 401 -
+127.0.0.1 - - [26/Sep/2026 00:43:58] "GET /api/users/profile HTTP/1.1" 200 -
+127.0.0.1 - - [26/Sep/2026 00:43:58] "GET /api/users/?per_page=3 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Sep/2026 00:43:59] "POST /api/auth/login HTTP/1.1" 200 -
+127.0.0.1 - - [26/Sep/2026 00:43:59] "GET /api/users/ HTTP/1.1" 403 -
+127.0.0.1 - - [26/Sep/2026 00:43:59] "PUT /api/users/profile HTTP/1.1" 200 -
+127.0.0.1 - - [26/Sep/2026 00:43:59] "PUT /api/users/2/roles HTTP/1.1" 200 -
+127.0.0.1 - - [26/Sep/2026 00:43:59] "PUT /api/users/3/roles HTTP/1.1" 403 -
+---------------------------------------------------------------
+
+Lectura de este registro, de arriba abajo:
+
+ * Los GET de ubicaciones responden 200 sin token: son rutas publicas.
+ * El primer POST /api/auth/login responde 200 y entrega el JWT.
+ * El segundo POST /api/auth/login responde 401: password incorrecto.
+ * GET /api/users/profile sin cabecera responde 401.
+ * GET /api/users/profile con 'Authorization: Bearer ...' responde 200.
+ * GET /api/users/ con el token de admin responde 200.
+ * GET /api/users/ con el token de juan_perez responde 403: el token
+   es valido, pero su rol no es Administrador. Esa es la diferencia
+   entre 401 y 403, y la razon de que la seguridad sea de dos capas.
+ * PUT /api/users/profile responde 200: la edicion de perfil funciona.
+ * PUT /api/users/2/roles responde 200: el cambio de rol funciona.
+ * PUT /api/users/3/roles con el token de juan_perez responde 403.

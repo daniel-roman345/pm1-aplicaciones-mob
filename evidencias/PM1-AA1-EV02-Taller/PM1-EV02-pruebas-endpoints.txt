@@ -1,0 +1,399 @@
+###############################################################
+#  PM1-AA1-EV02 · Verificacion de endpoints del backend        #
+#  Aprendiz: Daniel Salas Roman   Ficha: 3223873               #
+#  Backend Flask escuchando en http://127.0.0.1:5050          #
+#  Fecha: 2026-09-26 00:43 UTC                            #
+###############################################################
+
+===============================================================
+ 1. PAISES  ·  GET /api/locations/countries  ·  sin token
+===============================================================
+
+$ curl -i http://127.0.0.1:5050/api/locations/countries
+---------------------------------------------------------------
+HTTP/1.1 200 OK
+Server: Werkzeug/2.3.7 Python/3.11.15
+Date: Sat, 26 Sep 2026 00:43:57 GMT
+Content-Type: application/json
+Content-Length: 391
+Access-Control-Allow-Origin: *
+Connection: close
+
+{
+...
+{
+    "count": 5,
+    "countries": [
+        {
+            "CountryName": "Colombia",
+            "iD_Country": 1
+        },
+        {
+            "CountryName": "Estados Unidos",
+            "iD_Country": 2
+        },
+        {
+            "CountryName": "M\u00e9xico",
+            "iD_Country": 3
+        },
+        {
+            "CountryName": "Argentina",
+            "iD_Country": 4
+        },
+        {
+            "CountryName": "Espa\u00f1a",
+            "iD_Country": 5
+        }
+    ]
+}
+
+===============================================================
+ 2. ESTADOS DE COLOMBIA  ·  GET /api/locations/states?country_id=1
+===============================================================
+
+$ curl 'http://127.0.0.1:5050/api/locations/states?country_id=1'
+---------------------------------------------------------------
+{
+    "count": 4,
+    "states": [
+        {
+            "StatesName": "Antioquia",
+            "country": "Colombia",
+            "iD_Country": 1,
+            "iD_States": 1
+        },
+        {
+            "StatesName": "Cundinamarca",
+            "country": "Colombia",
+            "iD_Country": 1,
+            "iD_States": 2
+        },
+        {
+            "StatesName": "Valle del Cauca",
+            "country": "Colombia",
+            "iD_Country": 1,
+            "iD_States": 3
+        },
+        {
+            "StatesName": "Atl\u00e1ntico",
+            "country": "Colombia",
+            "iD_Country": 1,
+            "iD_States": 4
+        }
+    ]
+}
+
+===============================================================
+ 3. CIUDADES DE ANTIOQUIA  ·  GET /api/locations/cities?state_id=1
+===============================================================
+
+$ curl 'http://127.0.0.1:5050/api/locations/cities?state_id=1'
+---------------------------------------------------------------
+{
+    "cities": [
+        {
+            "CityName": "Medell\u00edn",
+            "country": "Colombia",
+            "iD_City": 1,
+            "iD_States": 1,
+            "state": "Antioquia"
+        },
+        {
+            "CityName": "Bello",
+            "country": "Colombia",
+            "iD_City": 2,
+            "iD_States": 1,
+            "state": "Antioquia"
+        },
+        {
+            "CityName": "Envigado",
+            "country": "Colombia",
+            "iD_City": 3,
+            "iD_States": 1,
+            "state": "Antioquia"
+        },
+        {
+            "CityName": "Itag\u00fc\u00ed",
+            "country": "Colombia",
+            "iD_City": 4,
+            "iD_States": 1,
+            "state": "Antioquia"
+        }
+    ],
+    "count": 4
+}
+
+===============================================================
+ 4. ROLES  ·  GET /api/auth/roles  ·  sin token
+===============================================================
+
+$ curl http://127.0.0.1:5050/api/auth/roles
+---------------------------------------------------------------
+{
+    "roles": [
+        {
+            "TypeRole": "Administrador",
+            "iDRole": 1
+        },
+        {
+            "TypeRole": "Usuario",
+            "iDRole": 2
+        },
+        {
+            "TypeRole": "Vendedor",
+            "iDRole": 3
+        },
+        {
+            "TypeRole": "Cliente",
+            "iDRole": 4
+        }
+    ]
+}
+
+===============================================================
+ 5. LOGIN CORRECTO  ·  POST /api/auth/login  ·  devuelve el JWT
+===============================================================
+
+$ curl -X POST .../api/auth/login -d '{"Email":"admin@ecommerce.com","PasswoRDkey":"admin123"}'
+---------------------------------------------------------------
+{
+    "message": "Login exitoso",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJlbWFpbCI6ImFkbWluQGVjb21tZXJjZS5jb20iLCJleHAiOjE3OTA0Njk4Mzh9.3w7LuU4S9fNUNsI94h0Dgff5AEEKYvFpxc8F_axsVAQ",
+    "user": {
+        "Email": "admin@ecommerce.com",
+        "UserName": "admin",
+        "city": {
+            "CityName": "Medell\u00edn",
+            "country": "Colombia",
+            "iD_City": 1,
+            "iD_States": 1,
+            "state": "Antioquia"
+        },
+        "iD_City": 1,
+        "iD_User": 1,
+        "roles": [
+            {
+                "TypeRole": "Administrador",
+                "iDRole": 1
+            }
+        ]
+    }
+}
+
+   >> Token recibido (primeros 45 caracteres): eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2Vy...
+
+===============================================================
+ 6. LOGIN CON PASSWORD ERRONEO  ·  debe responder 401
+===============================================================
+
+$ curl -i -X POST .../api/auth/login -d '{..."PasswoRDkey":"incorrecta"}'
+---------------------------------------------------------------
+HTTP/1.1 401 UNAUTHORIZED
+Server: Werkzeug/2.3.7 Python/3.11.15
+Date: Sat, 26 Sep 2026 00:43:58 GMT
+Content-Type: application/json
+Content-Length: 45
+Access-Control-Allow-Origin: *
+Connection: close
+
+{
+  "error": "Credenciales inv\u00e1lidas"
+}
+
+===============================================================
+ 7. PERFIL SIN TOKEN  ·  401 = no te identificaste (AUTENTICACION)
+===============================================================
+
+$ curl -i http://127.0.0.1:5050/api/users/profile
+---------------------------------------------------------------
+HTTP/1.1 401 UNAUTHORIZED
+Server: Werkzeug/2.3.7 Python/3.11.15
+Date: Sat, 26 Sep 2026 00:43:58 GMT
+Content-Type: application/json
+Content-Length: 37
+Access-Control-Allow-Origin: *
+Connection: close
+
+{
+  "error": "Token inv\u00e1lido"
+}
+
+===============================================================
+ 8. PERFIL CON TOKEN  ·  GET /api/users/profile
+===============================================================
+
+$ curl -H 'Authorization: Bearer $TOKEN' .../api/users/profile
+---------------------------------------------------------------
+{
+    "user": {
+        "Email": "admin@ecommerce.com",
+        "UserName": "admin",
+        "city": {
+            "CityName": "Medell\u00edn",
+            "country": "Colombia",
+            "iD_City": 1,
+            "iD_States": 1,
+            "state": "Antioquia"
+        },
+        "iD_City": 1,
+        "iD_User": 1,
+        "roles": [
+            {
+                "TypeRole": "Administrador",
+                "iDRole": 1
+            }
+        ]
+    }
+}
+
+===============================================================
+ 9. LISTA DE USUARIOS (solo Admin)  ·  GET /api/users/
+===============================================================
+
+$ curl -H 'Authorization: Bearer $TOKEN' http://127.0.0.1:5050/api/users/
+---------------------------------------------------------------
+{
+    "pagination": {
+        "page": 1,
+        "pages": 2,
+        "per_page": 3,
+        "total": 4
+    },
+    "users": [
+        {
+            "Email": "admin@ecommerce.com",
+            "UserName": "admin",
+            "city": {
+                "CityName": "Medell\u00edn",
+                "country": "Colombia",
+                "iD_City": 1,
+                "iD_States": 1,
+                "state": "Antioquia"
+            },
+            "iD_City": 1,
+            "iD_User": 1,
+            "roles": [
+                {
+                    "TypeRole": "Administrador",
+                    "iDRole": 1
+                }
+            ]
+        },
+        {
+            "Email": "juan@email.com",
+            "UserName": "juan_perez",
+            "city": {
+                "CityName": "Medell\u00edn",
+                "country": "Colombia",
+                "iD_City": 1,
+                "iD_States": 1,
+                "state": "Antioquia"
+            },
+            "iD_City": 1,
+            "iD_User": 2,
+            "roles": [
+                {
+                    "TypeRole": "Cliente",
+                    "iDRole": 4
+                }
+            ]
+
+===============================================================
+ 10. LISTA DE USUARIOS CON TOKEN DE NO-ADMIN  ·  403 = AUTORIZACION
+===============================================================
+
+$ login como juan_perez y pedir /api/users/
+---------------------------------------------------------------
+   >> Token de juan_perez obtenido: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
+
+HTTP/1.1 403 FORBIDDEN
+Server: Werkzeug/2.3.7 Python/3.11.15
+Date: Sat, 26 Sep 2026 00:43:59 GMT
+Content-Type: application/json
+Content-Length: 53
+Access-Control-Allow-Origin: *
+Connection: close
+
+{
+  "error": "No tienes permisos de administrador"
+}
+
+===============================================================
+ 11. EDITAR PERFIL  ·  PUT /api/users/profile  (Reto 2)
+===============================================================
+
+$ curl -X PUT -H 'Authorization: Bearer $TOKEN' -d '{"UserName":"admin","iD_City":2}'
+---------------------------------------------------------------
+{
+    "message": "Perfil actualizado exitosamente",
+    "user": {
+        "Email": "admin@ecommerce.com",
+        "UserName": "admin",
+        "city": {
+            "CityName": "Bello",
+            "country": "Colombia",
+            "iD_City": 2,
+            "iD_States": 1,
+            "state": "Antioquia"
+        },
+        "iD_City": 2,
+        "iD_User": 1,
+        "roles": [
+            {
+                "TypeRole": "Administrador",
+                "iDRole": 1
+            }
+        ]
+    }
+}
+
+===============================================================
+ 12. CAMBIAR EL ROL DE UN USUARIO  ·  PUT /api/users/2/roles  (Reto 2)
+===============================================================
+
+$ curl -X PUT -H 'Authorization: Bearer $TOKEN' -d '{"role_ids":[3]}' .../api/users/2/roles
+---------------------------------------------------------------
+{
+    "message": "Roles actualizados exitosamente",
+    "user": {
+        "Email": "juan@email.com",
+        "UserName": "juan_perez",
+        "city": {
+            "CityName": "Medell\u00edn",
+            "country": "Colombia",
+            "iD_City": 1,
+            "iD_States": 1,
+            "state": "Antioquia"
+        },
+        "iD_City": 1,
+        "iD_User": 2,
+        "roles": [
+            {
+                "TypeRole": "Vendedor",
+                "iDRole": 3
+            }
+        ]
+    }
+}
+
+===============================================================
+ 13. CAMBIAR ROL SIN SER ADMIN  ·  403
+===============================================================
+
+$ mismo PUT pero con el token de juan_perez
+---------------------------------------------------------------
+HTTP/1.1 403 FORBIDDEN
+Server: Werkzeug/2.3.7 Python/3.11.15
+Date: Sat, 26 Sep 2026 00:43:59 GMT
+Content-Type: application/json
+Content-Length: 53
+Access-Control-Allow-Origin: *
+Connection: close
+
+{
+  "error": "No tienes permisos de administrador"
+}
+
+###############################################################
+#  FIN DE LA VERIFICACION                                      #
+###############################################################
