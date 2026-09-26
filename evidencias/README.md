@@ -53,6 +53,36 @@ de usuarios, categorías y productos ya usaban clases envoltorio (`UsersResponse
 
 ---
 
+## Capturas disponibles
+
+Todas se generaron contra el backend Flask corriendo de verdad, no son montajes.
+
+| Captura | Evidencia | Qué muestra |
+|---|---|---|
+| `PM1-EV02-captura-lista-de-paises.png` | EV02 | La respuesta de la lista de países, que es la que pide la guía textualmente |
+| `PM1-EV02-captura-1-ubicaciones-y-roles.png` | EV02 | Países, estados, ciudades y roles respondiendo 200 |
+| `PM1-EV02-captura-2-autenticacion.png` | EV02 | Login correcto con el JWT, login fallido con 401, perfil sin token con 401 |
+| `PM1-EV02-captura-endpoints.png` | EV02 | Las 13 pruebas completas en una sola imagen |
+| `PM1-EV03-captura-antes-y-despues.png` | EV03 | El `git diff` del Reto 1: en rojo el código roto, en verde la corrección |
+| `PM1-EV04-captura-contrato-retrofit.png` | EV04 | El `git diff` del Reto 2 sobre `ApiService.kt` y los modelos |
+| `PM1-EV04-captura-viewmodels-pantallas.png` | EV04 | El `git diff` del Reto 2 sobre los ViewModel y las pantallas |
+| `PM1-EV04-captura-3-permisos-y-reto2.png` | EV04 | El rol cambiando a Vendedor, el perfil actualizándose y el 403 del no-administrador |
+| `PM1-EV04-captura-terminal-backend.png` | EV04 | El registro de peticiones del servidor con sus 200, 401 y 403 |
+| `PM1-EV05-captura-historial-commits.png` | EV05 | El árbol de commits de las tres ramas |
+
+### Lo que falta capturar
+
+Dos cosas necesitan el emulador de Android y no se pueden generar desde la terminal:
+
+- **La captura de Logcat** al abrir la pantalla de ubicaciones (EV02). Filtra por `LOCATION_DEBUG` o `HTTP_LOG`.
+- **Las capturas de la app funcionando** (EV05).
+
+Y los **dos videos**: el del Reto 1 (máximo 3 minutos: cargar países, seleccionar uno, que se llenen los
+estados) y el del Reto 2 (cambio de rol y edición de perfil, incluyendo el intento de un usuario sin
+permisos; entra con `juan@email.com` / `password123` y verás el desplegable deshabilitado).
+
+---
+
 ## Contenido de estas carpetas
 
 ### `PM1-AA1-EV02-Taller/`
