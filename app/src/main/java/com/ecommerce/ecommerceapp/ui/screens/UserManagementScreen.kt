@@ -60,6 +60,37 @@ fun UserManagementScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
+            // CORRECCIÓN PM1 · Reto 2: aviso visible cuando el usuario en sesión
+            // no es administrador. Sirve para la sustentación: se ve que la app
+            // avisa antes de intentar, y que el backend igual respondería 403.
+            if (!viewModel.esAdministrador) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Estás viendo esta pantalla sin permisos de administrador: " +
+                                "puedes consultar, pero no cambiar roles.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
             // Barra de búsqueda
             OutlinedTextField(
                 value = viewModel.searchQuery,
@@ -91,6 +122,7 @@ fun UserManagementScreen(
                         UserCard(
                             user = user,
                             availableRoles = viewModel.availableRoles,
+                            puedeCambiarRol = viewModel.esAdministrador,
                             isUpdatingRole = viewModel.isUpdatingRole,
                             onUpdateRole = { roleId ->
                                 viewModel.updateUserRole(user.iD_User, roleId)
@@ -140,6 +172,7 @@ fun UserManagementScreen(
 fun UserCard(
     user: UserProfile,
     availableRoles: List<com.ecommerce.ecommerceapp.models.Role>,
+    puedeCambiarRol: Boolean,
     isUpdatingRole: Boolean,
     onUpdateRole: (Int) -> Unit,
     onDeleteUser: () -> Unit
@@ -202,14 +235,17 @@ fun UserCard(
             }
 
             // Selector de nuevo rol
+            // CORRECCIÓN PM1 · Reto 2: el desplegable solo se abre si quien mira
+            // la pantalla es administrador.
             ExposedDropdownMenuBox(
-                expanded = expandedRoles,
-                onExpandedChange = { expandedRoles = !expandedRoles }
+                expanded = expandedRoles && puedeCambiarRol,
+                onExpandedChange = { if (puedeCambiarRol) expandedRoles = !expandedRoles }
             ) {
                 OutlinedTextField(
-                    value = "Cambiar rol",
+                    value = if (puedeCambiarRol) "Cambiar rol" else "Solo un administrador puede cambiarlo",
                     onValueChange = { },
                     readOnly = true,
+                    enabled = puedeCambiarRol,
                     label = { Text("Asignar rol") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedRoles) },
                     colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
