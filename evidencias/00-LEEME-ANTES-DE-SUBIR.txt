@@ -1,0 +1,103 @@
+===============================================================
+  ENTREGA PM1 - PLAN DE MEJORAMIENTO
+  Daniel Salas Roman   ·   Ficha 3223873
+  Analisis y Desarrollo de Software (228118)
+===============================================================
+
+Cada carpeta corresponde a una evidencia del Classroom.
+Sube el CONTENIDO de la carpeta, no la carpeta comprimida.
+
+ESTE ARCHIVO NO SE SUBE. Es solo tu guia.
+
+---------------------------------------------------------------
+  ENLACES DEL REPOSITORIO   (van en EV03, EV04 y EV05)
+---------------------------------------------------------------
+
+  Repositorio principal (app Android Kotlin)
+  https://github.com/daniel-roman345/pm1-aplicaciones-mob
+
+  Rama del Reto 1   (5 commits)
+  https://github.com/daniel-roman345/pm1-aplicaciones-mob/tree/fix/desplegable-ubicaciones
+
+  Rama del Reto 2   (8 commits)
+  https://github.com/daniel-roman345/pm1-aplicaciones-mob/tree/fix/roles-y-perfil
+
+  Historial de commits
+  https://github.com/daniel-roman345/pm1-aplicaciones-mob/commits/main
+
+  Backend Flask (Python)
+  https://github.com/daniel-roman345/ecommerce.app
+
+---------------------------------------------------------------
+  QUE VA EN CADA EVIDENCIA
+---------------------------------------------------------------
+
+PM1-AA1-EV01  ·  Reflexion
+    PM1-AA1-EV01-Reflexion.pdf          <- este es el que se sube
+    esquema-recorrido-del-dato.png      <- el diagrama, por si lo piden aparte
+    (el .docx va por si quieres editarlo antes)
+    COMPLETA
+
+PM1-AA1-EV02  ·  Taller
+    PM1-AA1-EV02-Tabla-de-Endpoints.pdf
+    PM1-EV02-captura-lista-de-paises.png
+    PM1-EV02-captura-1-ubicaciones-y-roles.png
+    PM1-EV02-captura-2-autenticacion.png
+    PM1-EV02-pruebas-endpoints.txt
+    + TU captura de la terminal con "Running on http://127.0.0.1:5050"
+    FALTA: la captura de LOGCAT al abrir la pantalla de Ubicaciones
+
+PM1-AA2-EV03  ·  Reto 1
+    PM1-EV03-captura-antes-y-despues.png
+    PM1-AA3-EV05-Informe-de-Depuracion.pdf   <- sirve como informe del diagnostico
+    + el enlace a la rama fix/desplegable-ubicaciones
+    FALTA: el VIDEO de maximo 3 minutos
+
+PM1-AA2-EV04  ·  Reto 2
+    PM1-EV04-captura-3-permisos-y-reto2.png  <- la mas importante
+    PM1-EV04-captura-terminal-backend.png
+    PM1-EV04-captura-contrato-retrofit.png
+    PM1-EV04-captura-viewmodels-pantallas.png
+    PM1-EV04-terminal-backend.txt
+    + el enlace a la rama fix/roles-y-perfil
+    FALTA: el VIDEO (cambio de rol + editar perfil + usuario sin permisos)
+
+PM1-AA3-EV05  ·  Informe
+    PM1-AA3-EV05-Informe-de-Depuracion.pdf
+    PM1-EV05-captura-historial-commits.png
+    + el enlace al repositorio
+    FALTA: capturas de la app funcionando
+    FALTA: la sustentacion oral (el guion esta dentro del PDF, seccion 7)
+
+---------------------------------------------------------------
+  LO QUE TE FALTA A TI   (4 cosas, todas necesitan el emulador)
+---------------------------------------------------------------
+
+  1. Captura de Logcat al abrir Ubicaciones.
+     Filtra por LOCATION_DEBUG o por HTTP_LOG.
+
+  2. Video del Reto 1, maximo 3 minutos:
+     cargar paises -> seleccionar Colombia -> que se llenen los estados.
+
+  3. Video del Reto 2:
+     cambiar el rol de un usuario y editar el perfil. Despues cierra
+     sesion, entra con juan@email.com / password123 y muestra que el
+     desplegable de roles esta deshabilitado. Graba tambien la terminal
+     del backend: ahi se vera el 403.
+
+  4. Capturas de la app funcionando, para EV05.
+
+  Antes de grabar: levanta el backend PRIMERO, y haz git pull en la
+  carpeta del Android para traer el cambio de ApiClient.kt. Sin ese
+  cambio la app apunta al servidor de Render y tu terminal no registra
+  ninguna peticion.
+
+---------------------------------------------------------------
+  CREDENCIALES
+---------------------------------------------------------------
+
+  admin@ecommerce.com / admin123      -> es Administrador
+  juan@email.com      / password123   -> NO es administrador
+
+  El login espera estas llaves exactas:
+  { "Email": "admin@ecommerce.com", "PasswoRDkey": "admin123" }
