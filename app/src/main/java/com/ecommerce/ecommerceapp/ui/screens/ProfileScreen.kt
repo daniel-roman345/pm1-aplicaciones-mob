@@ -126,23 +126,39 @@ fun ProfileScreen(
                         }
                     }
 
-                    // Email (solo lectura)
+                    // CORRECCIÓN PM1 · Reto 2: el correo era de solo lectura, así
+                    // que la pantalla no permitía "editar los datos del perfil" como
+                    // pide la guía. Ahora es editable y muestra el error de formato
+                    // mientras se escribe, sin esperar a pulsar Guardar.
+                    val correoInvalido = viewModel.email.isNotBlank() &&
+                        !android.util.Patterns.EMAIL_ADDRESS.matcher(viewModel.email.trim()).matches()
+
                     OutlinedTextField(
-                        value = viewModel.userProfile?.Email ?: "",
-                        onValueChange = { },
+                        value = viewModel.email,
+                        onValueChange = viewModel::updateEmail,
                         label = { Text("Email") },
                         leadingIcon = {
                             Icon(Icons.Default.Email, contentDescription = null)
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = false
+                        isError = correoInvalido,
+                        supportingText = {
+                            if (correoInvalido) {
+                                Text("El correo no tiene un formato válido")
+                            }
+                        },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     // Botón actualizar perfil
+                    // CORRECCIÓN PM1 · Reto 2: el botón se apaga mientras el
+                    // formulario no sea válido, para no mandar al backend datos
+                    // vacíos o un correo mal escrito.
                     LoadingButton(
                         text = "Actualizar Perfil",
                         isLoading = viewModel.isUpdatingProfile,
-                        onClick = viewModel::updateProfile
+                        onClick = viewModel::updateProfile,
+                        enabled = viewModel.formularioEsValido
                     )
                 }
             }
