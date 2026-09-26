@@ -16,6 +16,7 @@ class ProfileViewModel(private val sessionManager: SessionManager) : ViewModel()
 
     var userProfile by mutableStateOf<UserProfile?>(null)
     var userName by mutableStateOf("")
+    var email by mutableStateOf("")
     var selectedCityId by mutableStateOf(1)
     var cities by mutableStateOf<List<City>>(emptyList())
 
@@ -48,11 +49,20 @@ class ProfileViewModel(private val sessionManager: SessionManager) : ViewModel()
                     val response = ApiClient.apiService.getProfile("Bearer $token")
 
                     if (response.isSuccessful && response.body() != null) {
-                        userProfile = response.body()
+                        // CORRECCIÓN PM1 · Reto 2: el perfil viene DENTRO de la
+                        // llave "user". Antes se asignaba el envoltorio completo
+                        // y todos los campos llegaban vacíos.
+                        userProfile = response.body()!!.user
                         userName = userProfile?.UserName ?: ""
+                        email = userProfile?.Email ?: ""
                         selectedCityId = userProfile?.iD_City ?: 1
+                        Log.d("PROFILE_DEBUG", "Perfil cargado: $userName <$email>")
                     } else {
-                        errorMessage = "Error al cargar el perfil"
+                        errorMessage = when (response.code()) {
+                            401 -> "Tu sesión expiró, vuelve a iniciar sesión"
+                            else -> "Error al cargar el perfil (código ${response.code()})"
+                        }
+                        Log.e("PROFILE_DEBUG", "getProfile HTTP ${response.code()}")
                     }
                 }
             } catch (e: Exception) {
@@ -83,7 +93,11 @@ class ProfileViewModel(private val sessionManager: SessionManager) : ViewModel()
                     val response = ApiClient.apiService.updateProfile("Bearer $token", updateRequest)
 
                     if (response.isSuccessful && response.body() != null) {
-                        userProfile = response.body()
+                        // CORRECCIÓN PM1 · Reto 2: mismo envoltorio, ahora con
+                        // el mensaje que manda el propio servidor.
+                        val cuerpo = response.body()!!
+                        userProfile = cuerpo.user
+                        email = userProfile?.Email ?: email
 
                         // Actualizar sesión con nuevo nombre
                         sessionManager.saveUserSession(
@@ -94,9 +108,18 @@ class ProfileViewModel(private val sessionManager: SessionManager) : ViewModel()
                             roles = userProfile?.roles?.map { it.TypeRole } ?: emptyList()
                         )
 
-                        successMessage = "Perfil actualizado exitosamente"
+                        successMessage = cuerpo.message ?: "Perfil actualizado exitosamente"
+                        Log.d("PROFILE_DEBUG", "Perfil guardado: $userName, ciudad $selectedCityId")
                     } else {
-                        errorMessage = "Error al actualizar el perfil"
+                        // El 409 lo devuelve el backend cuando el correo ya lo
+                        // tiene otro usuario. Decirlo tal cual evita que el
+                        // aprendiz crea que la app está rota.
+                        errorMessage = when (response.code()) {
+                            409 -> "Ese correo ya está en uso por otro usuario"
+                            401 -> "Tu sesión expiró, vuelve a iniciar sesión"
+                            else -> "Error al actualizar el perfil (código ${response.code()})"
+                        }
+                        Log.e("PROFILE_DEBUG", "updateProfile HTTP ${response.code()}")
                     }
                 }
             } catch (e: Exception) {
