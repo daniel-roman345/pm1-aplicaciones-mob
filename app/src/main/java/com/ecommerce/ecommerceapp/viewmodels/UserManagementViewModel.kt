@@ -21,6 +21,13 @@ class UserManagementViewModel(private val sessionManager: SessionManager) : View
     var selectedUser by mutableStateOf<UserProfile?>(null)
     var availableRoles by mutableStateOf<List<Role>>(emptyList())
 
+    // CORRECCIÓN PM1 · Reto 2: primera capa de seguridad, la de la interfaz.
+    // Se lee del SessionManager, que lo guardó al iniciar sesión. Sirve para
+    // no ofrecer una acción que el servidor va a rechazar de todos modos.
+    // La segunda capa es el backend, que responde 403 aunque alguien fuerce
+    // la petición; por eso son dos capas y no una sola.
+    var esAdministrador by mutableStateOf(false)
+
     // Estados de carga
     var isLoadingUsers by mutableStateOf(false)
     var isLoadingRoles by mutableStateOf(false)
@@ -32,8 +39,16 @@ class UserManagementViewModel(private val sessionManager: SessionManager) : View
     var successMessage by mutableStateOf<String?>(null)
 
     init {
+        cargarPermisos()
         loadUsers()
         loadRoles()
+    }
+
+    private fun cargarPermisos() {
+        viewModelScope.launch {
+            esAdministrador = sessionManager.isAdmin.first()
+            Log.d("USER_MGMT_DEBUG", "¿El usuario en sesión es administrador? $esAdministrador")
+        }
     }
 
     fun loadUsers(page: Int = 1, search: String = "") {
@@ -73,7 +88,15 @@ class UserManagementViewModel(private val sessionManager: SessionManager) : View
             try {
                 val response = ApiClient.apiService.getRoles()
                 if (response.isSuccessful && response.body() != null) {
-                    availableRoles = response.body()!!
+                    // CORRECCIÓN PM1 · Reto 2: la lista viene DENTRO del objeto.
+                    availableRoles = response.body()!!.roles
+                    Log.d("USER_MGMT_DEBUG", "Roles cargados: ${availableRoles.size}")
+                    if (availableRoles.isEmpty()) {
+                        errorMessage = "El servidor no devolvió ningún rol"
+                    }
+                } else {
+                    errorMessage = "Error al cargar los roles (código ${response.code()})"
+                    Log.e("USER_MGMT_DEBUG", "getRoles HTTP ${response.code()}")
                 }
             } catch (e: Exception) {
                 Log.e("USER_MGMT_DEBUG", "Error loading roles", e)
@@ -97,6 +120,13 @@ class UserManagementViewModel(private val sessionManager: SessionManager) : View
     }
 
     fun updateUserRole(userId: Int, roleId: Int) {
+        // Capa 1: ni siquiera se lanza la petición si el usuario no es admin.
+        if (!esAdministrador) {
+            errorMessage = "Solo un administrador puede cambiar el rol de un usuario"
+            Log.d("USER_MGMT_DEBUG", "Cambio de rol bloqueado en la app: el usuario no es admin")
+            return
+        }
+
         isUpdatingRole = true
         viewModelScope.launch {
             try {
@@ -109,11 +139,25 @@ class UserManagementViewModel(private val sessionManager: SessionManager) : View
                         roleRequest = roleRequest
                     )
 
-                    if (response.isSuccessful) {
-                        successMessage = "Rol de usuario actualizado exitosamente"
+                    if (response.isSuccessful && response.body() != null) {
+                        // CORRECCIÓN PM1 · Reto 2: la respuesta es
+                        // { "message": "...", "user": { ... } }. Se aprovecha el
+                        // mensaje del servidor y el usuario ya actualizado.
+                        val cuerpo = response.body()!!
+                        val nuevoRol = cuerpo.user?.roles?.joinToString { it.TypeRole }
+                        successMessage = cuerpo.message ?: "Rol actualizado exitosamente"
+                        Log.d("USER_MGMT_DEBUG", "Usuario $userId quedó con el rol: $nuevoRol")
                         loadUsers(currentPage, searchQuery) // Recargar lista
                     } else {
-                        errorMessage = "Error al actualizar el rol del usuario"
+                        // El 403 no es un fallo de la app: es la matriz de permisos
+                        // funcionando. Se distingue del resto para que el mensaje
+                        // le diga la verdad al usuario.
+                        errorMessage = when (response.code()) {
+                            403 -> "No tienes permisos de administrador para cambiar roles"
+                            401 -> "Tu sesión expiró, vuelve a iniciar sesión"
+                            else -> "Error al actualizar el rol (código ${response.code()})"
+                        }
+                        Log.e("USER_MGMT_DEBUG", "updateUserRoles HTTP ${response.code()}")
                     }
                 }
             } catch (e: Exception) {

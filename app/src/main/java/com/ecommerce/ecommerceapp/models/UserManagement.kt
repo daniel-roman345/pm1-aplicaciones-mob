@@ -28,3 +28,17 @@ data class UpdateUserRoleRequest(
     @SerializedName("role_ids")
     val role_ids: List<Int>
 )
+// ============================================================================
+//  CLASE ENVOLTORIO DE LOS ROLES  (corrección PM1 · Reto 2)
+// ============================================================================
+// GET /api/auth/roles  ->  { "roles": [ { "iDRole": 1, "TypeRole": "Administrador" }, ... ] }
+//
+// El ApiService pedía Response<List<Role>>, o sea un arreglo. Gson recibía un
+// objeto y lanzaba JsonSyntaxException, igual que con los países del Reto 1.
+// Sin roles cargados, el desplegable de la pantalla de gestión de usuarios
+// quedaba vacío y no había forma de cambiarle el rol a nadie.
+
+data class RolesResponse(
+    @SerializedName("roles")
+    val roles: List<Role> = emptyList()
+)
