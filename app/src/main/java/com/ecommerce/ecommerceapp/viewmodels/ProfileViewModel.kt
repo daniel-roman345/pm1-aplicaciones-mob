@@ -1,6 +1,7 @@
 package com.ecommerce.ecommerceapp.viewmodels
 
 import android.util.Log
+import android.util.Patterns
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -74,9 +75,31 @@ class ProfileViewModel(private val sessionManager: SessionManager) : ViewModel()
         }
     }
 
+    // CORRECCIÓN PM1 · Reto 2: validación de entrada antes de tocar la red.
+    // La guía pide campos obligatorios, formato de correo y mensajes claros.
+    // Se valida aquí, en el ViewModel, y no en la pantalla, para que la regla
+    // sea una sola y la pantalla siga limitándose a dibujar el estado.
+    fun validarFormulario(): String? {
+        if (userName.isBlank()) return "El nombre de usuario es requerido"
+        if (userName.trim().length < 3) return "El nombre de usuario debe tener al menos 3 caracteres"
+        if (email.isBlank()) return "El correo es requerido"
+        if (!Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
+            return "El correo no tiene un formato válido"
+        }
+        if (selectedCityId <= 0) return "Debes seleccionar una ciudad"
+        return null
+    }
+
+    // La pantalla la usa para deshabilitar el botón de guardar mientras el
+    // formulario no sea válido.
+    val formularioEsValido: Boolean
+        get() = validarFormulario() == null
+
     fun updateProfile() {
-        if (userName.isBlank()) {
-            errorMessage = "El nombre de usuario es requerido"
+        val problema = validarFormulario()
+        if (problema != null) {
+            errorMessage = problema
+            Log.d("PROFILE_DEBUG", "Formulario rechazado: $problema")
             return
         }
 
@@ -86,8 +109,9 @@ class ProfileViewModel(private val sessionManager: SessionManager) : ViewModel()
                 val token = sessionManager.token.first()
                 if (token != null) {
                     val updateRequest = UpdateProfileRequest(
-                        UserName = userName,
-                        iD_City = selectedCityId
+                        UserName = userName.trim(),
+                        iD_City = selectedCityId,
+                        Email = email.trim()
                     )
 
                     val response = ApiClient.apiService.updateProfile("Bearer $token", updateRequest)
@@ -205,6 +229,11 @@ class ProfileViewModel(private val sessionManager: SessionManager) : ViewModel()
                 isLoadingCities = false
             }
         }
+    }
+
+    fun updateEmail(newEmail: String) {
+        email = newEmail
+        clearMessages()
     }
 
     fun updateUserName(newName: String) {

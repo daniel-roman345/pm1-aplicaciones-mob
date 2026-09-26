@@ -27,7 +27,13 @@ data class UpdateProfileRequest(
     val UserName: String,
 
     @SerializedName("iD_City")
-    val iD_City: Int
+    val iD_City: Int,
+
+    // CORRECCIÓN PM1 · Reto 2: el backend acepta también el correo y devuelve
+    // 409 si ya lo tiene otro usuario. Antes nunca se enviaba, así que el campo
+    // era imposible de editar desde la app.
+    @SerializedName("Email")
+    val Email: String
 )
 
 data class ChangePasswordRequest(
